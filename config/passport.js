@@ -11,19 +11,19 @@ let initPassportLocal = () => {
         passReqToCallback: true,
       },
       async (req, email, password, done) => {
+        let tempUser;
         try {
-          let match = await db
-            .handleLogin(email, password)
-            .then(async (user) => {
-              if (match === true) {
-                return done(null, user, null);
-              } else {
-                return done(null, false, req.flash("error", match));
-              }
-            });
-        } catch (err) {
-          console.log(err);
-          return done(null, false, { message: err });
+          await db.handleLogin(email, password).then(async (user) => {
+          tempUser = user;
+          });
+          if(tempUser)
+          {
+            return done(null, tempUser, null);
+          }
+           return done(null, false, req.flash("error_msg", "login failed!"));
+        }
+         catch (err) {
+           return done(err, false, req.flash("error_msg", "login failed!"));
         }
       }
     )
@@ -43,5 +43,4 @@ passport.deserializeUser((id, done) => {
       return done(error, null);
     });
 });
-
 module.exports = initPassportLocal;

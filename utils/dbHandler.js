@@ -3,7 +3,7 @@ db.connect((err) => {
   if (err) throw err;
 });
 
-function runQuery(query, params) {
+function runQuery(query, params, errMsg) {
   return new Promise((resolve, reject) => {
     try {
       db.query(query, params, (error, results) => {
@@ -12,7 +12,7 @@ function runQuery(query, params) {
         resolve(user);
       });
     } catch (err) {
-      reject(err);
+      reject(errMsg);
     }
   });
 }

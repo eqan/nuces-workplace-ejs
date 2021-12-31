@@ -4,30 +4,18 @@ const db = require("../services/register");
 const bcrypt = require("bcryptjs");
 const hf = require("../utils/helperFunctions");
 const passport = require("passport");
-// const passwordValidator = require('../utils/passwordValidator');
+const { forwardAuthenticated } = require('../config/auth');
 
 // Login Page
-router.get("/login", (req, res) => res.render("Login"));
+router.get('/login', forwardAuthenticated, (req, res) => res.render('login'));
 
 // Register Page
-router.get("/register", (req, res) => res.render("Register"));
+router.get('/register', forwardAuthenticated, (req, res) => res.render('register'));
 
 //Register handle
 router.post("/register", (req, res) => {
   let { name, email, password, password2 } = req.body;
-  let errors = [];
-
-  if (!name || !email || !password || !password2) {
-    errors.push({ msg: "Please enter all fields" });
-  }
-
-  if (password != password2) {
-    errors.push({ msg: "Passwords do not match" });
-  }
-
-  if (password.length < 6) {
-    errors.push({ msg: "Password must be at least 6 characters" });
-  }
+  let errors = db.passwordValidator(name, email, password, password2);
 
   if (errors.length > 0) {
     res.render("register", {
@@ -67,10 +55,17 @@ router.post("/register", (req, res) => {
 // Login Handle
 router.post('/login', (req, res, next) => {
   passport.authenticate('local', {
-    successRedirect: '/dashboard',
+    successRedirect: '/',
     failureRedirect: '/users/login',
     failureFlash: true
   })(req, res, next);
 })
+
+// Logout
+router.get('/logout', (req, res) => {
+  req.logout();
+  req.flash('success_msg', 'You are logged out');
+  res.redirect('/users/login');
+});
 
 module.exports = router;
